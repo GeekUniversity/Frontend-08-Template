@@ -1,9 +1,4 @@
-<!--
- * @Author: songyzh
- * @Date: 2020-12-28 11:09:11
- * @LastEditors: songyzh
- * @LastEditTime: 2020-12-28 14:41:39
--->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,11 +103,7 @@
     });
 
     document.addEventListener("mouseup", () => (mousedown = false));
-
     document.addEventListener("contextmenu", (e) => e.preventDefault());
-    document.getElementById("save").addEventListener("click", (e) => {
-        localStorage.setItem("map", JSON.stringify(map));
-    });
     // path(map, [0, 0], [100, 100]);
 </script>
 </body>
