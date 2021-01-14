@@ -18,20 +18,93 @@ let color = 1;
 show();
 
 /**
+ * 最好的动作
+ * @param {number[][]} pattern 当前棋局
+ * @param {number} color 当前颜色
+ */
+function bestMove(pattern, color) {
+    let p;
+    if (p = willWin(pattern, color)) {
+        return {
+            point: p,
+            result: 1
+        }
+    } else {
+        let result = -2;
+        let point = null;
+        for (let y in pattern) {
+            for (let x in pattern[y]) {
+                if (pattern[y][x]) {
+                    continue
+                }
+                let pattern2 = copyPattern(pattern);
+                pattern2[y][x] = color;
+                let res = bestMove(pattern2, 3 - color).result;
+
+                if (-res > result) {
+                    result = -res;
+                    point = [x, y];
+                }
+            }
+        }
+
+        return {
+            point,
+            result: point ? result : 0
+        }
+    }
+}
+
+/**
  * 下一步棋
  * @param {number} x 横坐标
  * @param {number} y 纵坐标
  */
 function move(x, y) {
     pattern[y][x] = color;
-    if (check(pattern, x, y)) {
+    if (check(pattern, x, y, color)) {
         alert(`${color === 1 ? "⭕" : "❌"}赢了`);
         color = 0;
         show();
     } else {
         color = 3 - color;
         show();
+        // if (willWin(pattern, color)) {
+        //     console.log(`${color === 1 ? "⭕" : "❌"}要赢了`);
+        // }
+        console.log(bestMove(pattern, color), willWin(pattern, color));
     }
+}
+
+/**
+ * 当前棋子颜色是否要赢
+ * @param {number[][]} pattern 棋局
+ * @param {number} color 当前棋子颜色
+ * @returns {number[]|null} 能赢就输出赢的点，反之输出null
+ */
+function willWin(pattern, color) {
+    for (let y in pattern) {
+        for (let x in pattern[y]) {
+            if (pattern[y][x]) {
+                continue;
+            }
+            let pattern2 = copyPattern(pattern);
+            pattern2[y][x] = color;
+            if (check(pattern2, x, y, color)) {
+                return [x, y]
+            }
+        }
+    }
+    return null
+}
+
+/**
+ * 复制当前棋局进行模拟用
+ * @param {number[][]} pattern 棋局
+ * @returns {number[][]} 拷贝
+ */
+function copyPattern(pattern) {
+    return JSON.parse(JSON.stringify(pattern));
 }
 
 /**
@@ -40,8 +113,8 @@ function move(x, y) {
  * @param {number} x 横坐标
  * @param {number} y 纵坐标
  */
-function check(pattern, x, y) {
-    // 当前坐标处于左对角线
+function check(pattern, x, y, color) {
+    // 当前坐标处于对角线
     if (x === y) {
         let res = true;
         for (let index in pattern) {
@@ -53,9 +126,7 @@ function check(pattern, x, y) {
         if (res) {
             return res
         }
-    }
-    // 当前坐标处于右对角线
-    else if (x + y === 2) {
+    } else if (x + y === 2) {
         let res = true;
         for (let index in pattern) {
             if (pattern[index][2 - index] !== color) {
