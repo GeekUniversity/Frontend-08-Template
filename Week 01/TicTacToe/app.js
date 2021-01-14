@@ -13,14 +13,19 @@ const pattern = [
     [0, 0, 0]
 ];
 
-let color = 1;
+let color = 1, round = 0;
 
 show();
 
 /**
  * 最好的动作
+ * @typedef {object} moveResult 最好的结果
+ * @property {number[]} point 最好的点
+ * @property {number} result 最好的结果，1赢，-1输，平局
+ * 
  * @param {number[][]} pattern 当前棋局
  * @param {number} color 当前颜色
+ * @returns {...moveResult} 最好的点和结果
  */
 function bestMove(pattern, color) {
     let p;
@@ -41,8 +46,11 @@ function bestMove(pattern, color) {
                 pattern2[y][x] = color;
                 let res = bestMove(pattern2, 3 - color).result;
 
-                if (-res > result) {
-                    result = -res;
+                // if (color === 2) 
+                //     console.log(x, y, -res, color, "round ", round)
+
+                if (- res > result) {
+                    result = - res;
                     point = [x, y];
                 }
             }
@@ -62,6 +70,7 @@ function bestMove(pattern, color) {
  */
 function move(x, y) {
     pattern[y][x] = color;
+    round++;
     if (check(pattern, x, y, color)) {
         alert(`${color === 1 ? "⭕" : "❌"}赢了`);
         color = 0;
@@ -69,10 +78,12 @@ function move(x, y) {
     } else {
         color = 3 - color;
         show();
-        // if (willWin(pattern, color)) {
-        //     console.log(`${color === 1 ? "⭕" : "❌"}要赢了`);
-        // }
-        console.log(bestMove(pattern, color), willWin(pattern, color));
+        if (round === 9) {
+            alert("平局");
+        } else if (color === 2) {
+            let tMove = bestMove(pattern, color).point;
+            move(tMove[0], tMove[1]);
+        }
     }
 }
 
@@ -114,8 +125,8 @@ function copyPattern(pattern) {
  * @param {number} y 纵坐标
  */
 function check(pattern, x, y, color) {
-    // 当前坐标处于对角线
-    if (x === y) {
+    // 检查对角线
+    {
         let res = true;
         for (let index in pattern) {
             if (pattern[index][index] !== color) {
@@ -126,7 +137,8 @@ function check(pattern, x, y, color) {
         if (res) {
             return res
         }
-    } else if (x + y === 2) {
+    }
+    {
         let res = true;
         for (let index in pattern) {
             if (pattern[index][2 - index] !== color) {
