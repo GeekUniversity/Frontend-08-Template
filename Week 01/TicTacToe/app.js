@@ -8,8 +8,8 @@ if (parseInt(getComputedStyle(toeplace).width) > window.innerHeight) {
 }
 
 const pattern = [
-    [1, 0, 0],
-    [0, 2, 0],
+    [0, 0, 0],
+    [0, 0, 0],
     [0, 0, 0]
 ];
 
