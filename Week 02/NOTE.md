@@ -8,7 +8,51 @@
 
 思路：
 1. 初始化一个长度10000的一维数组，进行fill
-2. 行列两层for循环，将cell填进去，判断值决定是否进行填色
+2. 行列两层for循环，将cell填进去，判断值决定是否进行填色（这儿我直接一维for）
 3. cell的事件监听， cell有mousemove时，在document有左键按下的事件的时候，对该cell进行上色，右键（e.which===3）则是清除
 4. document的contextmenu事件要禁止(e.preventDefault)
 5. 保存按钮——把这个数组存到localStorage里，每次读取页面都会优先使用localStorage里的数组
+
+## 寻路问题
+
+从起点到终点，找出一条路径
+
+广度优先搜索，某一点周围的点
+
+function path(map, start, end) {
+	var queue = [start]
+
+	function insert(x, y) {
+		if (触到边界 || 点已经走过) {
+			return;
+		}
+		
+		map[y*100+x] = 2
+		queue.push([x,y])
+	}
+
+	while (queue还有点) {
+		取出第一个点
+		if (第一个点是终点) {
+			return true
+		}
+		insert(左)
+		insert(下)
+		insert(右)
+		insert(上)
+	}
+
+	return false
+}
+
+shift unshift 数组首取出和加入
+push pop 数组尾加入和取出
+
+队列
+1. push shift
+2. pop unshift
+
+栈 push pop (shift unshift可能会有性能问题，一般不这样用)
+
+广度优先搜索是队列
+深度优先搜索是栈
