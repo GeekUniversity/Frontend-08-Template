@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地图编辑器</title>
+    <style>
+        #map {
+            width: 701px;
+            line-height: 0;
+        }
+        .cell {
+            width: 6px;
+            height: 6px;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            background-color: #ccc;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <button onclick="save()">Save</button>
+    <script src="app.js"></script>
+</body>
+</html>
