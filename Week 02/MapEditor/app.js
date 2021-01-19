@@ -46,23 +46,37 @@ function save() {
 }
 
 /**
+ * 睡眠一定时间，到时间解决的Promise
+ * @param {number} t 时间间隔
+ * @returns {Promise}
+ */
+function sleep(t) {
+    return new Promise(resolve => {
+        setTimeout(resolve, t)
+    })
+}
+
+/**
  * 广度寻路
  * @param {number[]} map 地图
  * @param {number[]} start 起点
  * @param {number[]} end 终点
  */
-function path(map, start, end) {
+async function path(map, start, end) {
     const queue = [start]
 
-    function insert(x, y) {
+    async function insert(x, y) {
         // 越过边界
         if (x < 0 || x === 100 || y < 0 || y === 100) {
             return
         }
-        // 走过了
-        if (map[y*100+x] === 2) {
+        // 点不为空
+        if (map[y*100+x]) {
             return
         }
+
+        await sleep(30)
+        mapArea.children[y*100+x].style.backgroundColor = 'lightgreen'
         map[y*100+x] = 2
         // 进队尾
         queue.push([x, y])
@@ -76,10 +90,10 @@ function path(map, start, end) {
             return true
         }
         // 左下右上
-        insert(x-1, y)
-        insert(x, y-1)
-        insert(x+1, y)
-        insert(x, y+1)
+        await insert(x-1, y)
+        await insert(x, y-1)
+        await insert(x+1, y)
+        await insert(x, y+1)
     }
 
     return false

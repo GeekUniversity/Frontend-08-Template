@@ -19,11 +19,12 @@
 
 广度优先搜索，某一点周围的点
 
+```
 function path(map, start, end) {
 	var queue = [start]
 
 	function insert(x, y) {
-		if (触到边界 || 点已经走过) {
+		if (触到边界 || 点已经走过 || 点的值不为空) {
 			return;
 		}
 		
@@ -44,6 +45,7 @@ function path(map, start, end) {
 
 	return false
 }
+```
 
 shift unshift 数组首取出和加入
 push pop 数组尾加入和取出
@@ -56,3 +58,55 @@ push pop 数组尾加入和取出
 
 广度优先搜索是队列
 深度优先搜索是栈
+
+## 异步编程可视化寻路算法
+
+目前寻路存在问题：
+正确性不好保证
+找到一条路径，不只是能不能走过去
+
+用到上节课的sleep函数：
+
+```
+function sleep(t) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, t)
+	})
+}
+```
+
+将来课程也会用到
+
+上节课的函数通过async await进行异步化处理
+
+```
+async function path(map, start, end) {
+	var queue = [start]
+
+	async function insert(x, y) {
+		if (触到边界 || 点已经走过 || 点的值不为空) {
+			return;
+		}
+		
+		// 稍微等一下，这样能看出每次insert的变化
+		await sleep(30)
+		// 把对应的格子标浅绿色，可以在地图上直观看到结果
+		container.children[y*100+x].style.backgroundColor = 'lightgreen'
+		map[y*100+x] = 2
+		queue.push([x,y])
+	}
+
+	while (queue还有点) {
+		取出第一个点
+		if (第一个点是终点) {
+			return true
+		}
+		await insert(左)
+		await insert(下)
+		await insert(右)
+		await insert(上)
+	}
+
+	return false
+}
+```
