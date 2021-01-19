@@ -29,18 +29,63 @@ function tokenize(source) {
 
 	while (true) {
 		result = regexp.exec(source)
-	if (!result) {
-		break
-	}
+        if (!result) {
+            break
+        }
 
-	for (var i = 1; i <= dictionary.length; i ++) {
-		if (result[i]) {
-			console.log(dictionary[i - 1])
-		}
-	}
-	console.log(result)
+        for (var i = 1; i <= dictionary.length; i ++) {
+            if (result[i]) {
+                console.log(dictionary[i - 1])
+            }
+        }
+        console.log(result)
 	}
 }
 
 tokenize("1024 + 10 * 25")
+```
+
+## LL词法分析
+
+```js
+var regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g
+var dictionary = ["Number", "WhiteSpace", "LineTerminator", "+", "-", "*", "/"]
+
+function *tokenize(source) {
+	var result = null
+	var lastIndex = 0
+
+	while (true) {
+		lastIndex = regexp.lastIndex
+		result = regexp.exec(source)
+        if (!result) {
+            break
+        }
+        // 其实应该throw一个error出来，这里就先不做处理
+        if (regexp.lastIndex - lastIndex > result.length) {
+            break
+        }
+
+        let token = {
+            type: null,
+            value: null
+        }
+
+            for (var i = 1; i <= dictionary.length; i ++) {
+                if (result[i]) {
+                    token.type = dictionary[i - 1]
+                }
+            }
+            token.value = result[0]
+        yield token
+	}
+
+	yield {
+		type: "EOF"
+	}
+}
+
+for (let token of tokenize("1024 + 10 * 25")) {
+	console.log(token)
+}
 ```
