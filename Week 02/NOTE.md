@@ -191,3 +191,52 @@ class Sorted {
 	}
 }
 ```
+
+将path的数据结构换成我们自己写的
+
+```
+async function path(map, start, end) {
+	var queue = new Sorted([start], (a, b) => distance(a) - distance(b))
+	// 不影响原来的map
+	var table = Object.create(map)
+
+	async function insert(x, y, pre) {
+		if (触到边界 || 点已经走过 || 点的值不为空) {
+			return;
+		}
+		
+		await sleep(5)
+		// 把对应的格子标浅绿色，可以在地图上直观看到结果
+		container.children[y*100+x].style.backgroundColor = 'lightgreen'
+		map[y*100+x] = 2
+		// 把该点的前面的一个点存到table里
+		table[y*100+x] = pre
+		queue.give([x,y])
+	}
+
+	function distance(point) {
+		return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2
+	}
+
+	while (queue还有点) {
+		取出第一个点
+		if (第一个点是终点) {
+			通过table从终点出发一直走到起点（UI上标成紫色），并且把点的数组返回
+			这里可以给标紫加个sleep
+		}
+		await insert(左, 第一个点的坐标)
+		await insert(下, 第一个点的坐标)
+		await insert(右, 第一个点)
+		await insert(上, 第一个点)
+		// 这四个方向也insert
+		//左上
+		//右上
+		//左下
+		//右下
+	}
+
+	return null
+}
+```
+
+更佳路径法：奥妙在一写一读上（2.6 03:46）（选做）

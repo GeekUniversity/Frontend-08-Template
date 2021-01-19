@@ -63,7 +63,7 @@ function sleep(t) {
  * @param {number[]} end 终点
  */
 async function path(map, start, end) {
-    const queue = [start]
+    const queue = new Sorted([start], (a, b) => distance(a) - distance(b))
     const pathTable = Object.create(map)
 
     /**
@@ -72,7 +72,7 @@ async function path(map, start, end) {
      * @param {number} y 该点的纵坐标
      * @param {number[]} pre 前面一个点的坐标
      */
-    function insert(x, y, pre) {
+    async function insert(x, y, pre) {
         // 越过边界
         if (x < 0 || x === 100 || y < 0 || y === 100) {
             return
@@ -82,16 +82,22 @@ async function path(map, start, end) {
             return
         }
 
+        await sleep(5)
         mapArea.children[y*100+x].style.backgroundColor = 'lightgreen'
         pathTable[y*100+x] = pre
 
         // 进队尾
-        queue.push([x, y])
+        queue.give([x, y])
     }
 
-    while (queue.length) {
+    function distance(point) {
+        return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2
+    }
+
+    while (queue.length()) {
         // 取队首
-        const [x, y] = queue.shift()
+        const [x, y] = queue.take()
+        console.log(x, y)
         // 终点
         if (x === end[0] && y === end[1]) {
             let path = [[x, y]]
@@ -108,15 +114,15 @@ async function path(map, start, end) {
             return path
         }
         // 左下右上
-        insert(x-1, y, [x, y])
-        insert(x, y-1, [x, y])
-        insert(x+1, y, [x, y])
-        insert(x, y+1, [x, y])
+        await insert(x-1, y, [x, y])
+        await insert(x, y-1, [x, y])
+        await insert(x+1, y, [x, y])
+        await insert(x, y+1, [x, y])
         // 斜方向
-        insert(x-1, y-1, [x, y])
-        insert(x-1, y+1, [x, y])
-        insert(x+1, y-1, [x, y])
-        insert(x+1, y+1, [x, y])
+        await insert(x-1, y-1, [x, y])
+        await insert(x-1, y+1, [x, y])
+        await insert(x+1, y-1, [x, y])
+        await insert(x+1, y+1, [x, y])
     }
 
     return null
@@ -128,13 +134,15 @@ async function path(map, start, end) {
 class Sorted {
     /**
      * 建立排序的数据结构
-     * @param {number[]} data 数组
+     * @param {*[]} data 数组
      * @param {function} compare 比较函数
      */
     constructor(data, compare) {
-        this.data = data
+        this.data = data.slice()
         this.compare = compare || ((a, b) => a - b)
     }
+
+    length() {return this.data.length}
 
     /**
      * 取出最小的元素
@@ -161,7 +169,7 @@ class Sorted {
 
     /**
      * 加入新数值
-     * @param {number} v 新数值
+     * @param {*} v 新数值
      */
     give(v) {
         this.data.push(v)
