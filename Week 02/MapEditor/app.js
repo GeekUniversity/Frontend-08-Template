@@ -64,20 +64,27 @@ function sleep(t) {
  */
 async function path(map, start, end) {
     const queue = [start]
+    const pathTable = Object.create(map)
 
-    async function insert(x, y) {
+    /**
+     * 把该点推到队列，并且把该点的前一点记录下来
+     * @param {number} x 该点的横坐标
+     * @param {number} y 该点的纵坐标
+     * @param {number[]} pre 前面一个点的坐标
+     */
+    function insert(x, y, pre) {
         // 越过边界
         if (x < 0 || x === 100 || y < 0 || y === 100) {
             return
         }
         // 点不为空
-        if (map[y*100+x]) {
+        if (pathTable[y*100+x]) {
             return
         }
 
-        await sleep(30)
         mapArea.children[y*100+x].style.backgroundColor = 'lightgreen'
-        map[y*100+x] = 2
+        pathTable[y*100+x] = pre
+
         // 进队尾
         queue.push([x, y])
     }
@@ -87,14 +94,30 @@ async function path(map, start, end) {
         const [x, y] = queue.shift()
         // 终点
         if (x === end[0] && y === end[1]) {
-            return true
+            let path = [[x, y]]
+            let [x1, y1] = [x, y]
+
+            mapArea.children[y*100+x].style.backgroundColor = 'purple'
+
+            while (x1 !== start[0] || y1 !== start[1]) {
+                [x1, y1] = pathTable[y1*100+x1]
+                await sleep(30)
+                mapArea.children[y1*100+x1].style.backgroundColor = 'purple'
+                path.push([x1, y1])
+            }
+            return path
         }
         // 左下右上
-        await insert(x-1, y)
-        await insert(x, y-1)
-        await insert(x+1, y)
-        await insert(x, y+1)
+        insert(x-1, y, [x, y])
+        insert(x, y-1, [x, y])
+        insert(x+1, y, [x, y])
+        insert(x, y+1, [x, y])
+        // 斜方向
+        insert(x-1, y-1, [x, y])
+        insert(x-1, y+1, [x, y])
+        insert(x+1, y-1, [x, y])
+        insert(x+1, y+1, [x, y])
     }
 
-    return false
+    return null
 }
