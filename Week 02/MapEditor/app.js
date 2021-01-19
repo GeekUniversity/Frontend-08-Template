@@ -121,3 +121,49 @@ async function path(map, start, end) {
 
     return null
 }
+
+/**
+ * 排序的数据结构
+ */
+class Sorted {
+    /**
+     * 建立排序的数据结构
+     * @param {number[]} data 数组
+     * @param {function} compare 比较函数
+     */
+    constructor(data, compare) {
+        this.data = data
+        this.compare = compare || ((a, b) => a - b)
+    }
+
+    /**
+     * 取出最小的元素
+     */
+    take() {
+        if (!this.data.length) {
+            return
+        }
+
+        let min = this.data[0]
+        let minIndex = 0
+
+        for (let i = 1; i < this.data.length; i++) {
+            if (this.compare(min, this.data[i]) > 0) {
+                min = this.data[i]
+                minIndex = i
+            }
+        }
+
+        this.data[minIndex] = this.data[this.data.length - 1]
+        this.data.pop()
+        return min
+    }
+
+    /**
+     * 加入新数值
+     * @param {number} v 新数值
+     */
+    give(v) {
+        this.data.push(v)
+    }
+}

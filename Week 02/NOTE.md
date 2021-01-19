@@ -155,3 +155,39 @@ async function path(map, start, end) {
 }
 ```
 
+## 启发式搜索
+
+可以有优先级的寻路，广搜是比较傻的 A*
+
+把先进先出的queue改成自定义的数据结构
+
+```
+class Sorted {
+	constructor(data, compare) {
+		this.data = data.slice();
+		this.compare = compare || ((a, b) => a - b)
+	}
+
+	take() {
+		if (!this.data.length)
+			return;
+		let min = this.data[0]
+		let minIndex = 0
+
+		for (let i = 1; i < this.data.length; i++) {
+			if (this.compare(this.data[i], min) < 0) {
+				min = this.data[i]
+				minIndex = i	
+			}
+		}
+
+		this.data[minIndex] = this.data[this.data.length - 1]
+		this.data.pop()
+		return min
+	}
+
+	give(v) {
+		this.data.push(v)
+	}
+}
+```
