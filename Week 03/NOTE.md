@@ -94,6 +94,13 @@ for (let token of tokenize("1024 + 10 * 25")) {
 
 基本语法结构：每一个产生式对应着我们的函数
 
+<AdditiveExpression> ::=
+	<Number>
+	|<MultiplicativeExpression><*><Number>
+	|<MultiplicativeExpression></><Number>
+	|<AdditiveExpression><+><MultiplicativeExpression>
+	|<AdditiveExpression><-><MultiplicativeExpression>
+
 所以先把名字写起来
 
 ```js
@@ -142,10 +149,59 @@ for (let token of tokenize("1024 + 10 * 25")) {
 	}
 }
 
-function Expression(tokens) {
+function Expression(source) {
+	if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "EOF") {
+		let node = {
+			type: "Expression",
+			children: [source.shift(), source.shift()]
+		}
+		source.unshift(node)
+		return node
+	}
+	AdditiveExpression(source)
+	return Expression(source)
 }
 
 function AdditiveExpression(source) {
+	if (source[0].type === "MultiplicativeExpression") {
+		let node = {
+			type: "AdditiveExpression",
+			children: [source[0]]
+		}
+		source[0] = node
+		return AdditiveExpression(source)
+	}
+	if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "+") {
+		let node = {
+			type: "AdditiveExpression",
+			operator: "+",
+			children: []
+		}
+		node.children.push(source.shift())
+		node.children.push(source.shift())
+		MultiplicativeExpression(source)
+		node.children.push(source.shift())
+		source.unshift(node)
+		return AdditiveExpression(source)
+	}
+	if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "-") {
+		let node = {
+			type: "AdditiveExpression",
+			operator: "-",
+			children: []
+		}
+		node.children.push(source.shift())
+		node.children.push(source.shift())
+		MultiplicativeExpression(source)
+		node.children.push(source.shift())
+		source.unshift(node)
+		return AdditiveExpression(source)
+	}
+	if (source[0].type === "AdditiveExpression") {
+		return source[0]
+	}
+	MultiplicativeExpression(source)
+	return AdditiveExpression(source)
 }
 
 function MultiplicativeExpression(source) {
@@ -157,7 +213,7 @@ function MultiplicativeExpression(source) {
 		source[0] = node
 		return MultiplicativeExpression(source)
 	}
-	if (source[0].type == "MultiplicativeExpression" && source[1] && source[1].type === "*") {
+	if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "*") {
 		let node = {
 			type: "MultiplicativeExpression",
 			operator: "*",
@@ -169,7 +225,7 @@ function MultiplicativeExpression(source) {
 		source.unshift(node)
 		return MultiplicativeExpression(source)
 	}
-	if (source[0].type == "MultiplicativeExpression" && source[1] && source[1].type === "/") {
+	if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "/") {
 		let node = {
 			type: "MultiplicativeExpression",
 			operator: "/",
@@ -181,7 +237,7 @@ function MultiplicativeExpression(source) {
 		source.unshift(node)
 		return MultiplicativeExpression(source)
 	}
-	if (source[0].type == "MultiplicativeExpression") {
+	if (source[0].type === "MultiplicativeExpression") {
 		return source[0]
 	}
 	// 不会执行
