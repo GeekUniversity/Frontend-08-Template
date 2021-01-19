@@ -32,6 +32,59 @@ function *tokenize(source) {
     }
 }
 
-for (let token of tokenize("1024 + 10 * 25")) {
-    console.log(token)
+let source = []
+
+for (let token of tokenize("10 * 25")) {
+    if (token.type !== "WhiteSpace" && token.type !== "LineTerminator") {
+        source.push(token)
+    }
 }
+
+function Expression(tokens) {
+
+}
+
+function AdditiveExpression(source) {
+
+}
+
+function MultiplicativeExpression(source) {
+    if (source[0].type === "Number") {
+        let node = {
+            type: "MultiplicativeExpression",
+            children: [source[0]]
+        }
+        source[0] = node
+        return MultiplicativeExpression(source)
+    }
+    if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "*") {
+        let node = {
+            type: "MultiplicativeExpression",
+            operator: "*",
+            children: []
+        }
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        source.unshift(node)
+        return MultiplicativeExpression(source)
+    }
+    if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "/") {
+        let node = {
+            type: "MultiplicativeExpression",
+            operator: "/",
+            children: []
+        }
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        node.children.push(source.shift())
+        source.unshift(node)
+        return MultiplicativeExpression(source)
+    }
+    if (source[0].type === "MultiplicativeExpression") {
+        return source[0]
+    }
+    return MultiplicativeExpression(source)
+}
+
+console.log(MultiplicativeExpression(source))
