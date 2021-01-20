@@ -63,3 +63,71 @@ for (let i = 0; i < 100000; i++) {
 	trie.insert(randomWord(4))
 }
 ```
+
+## KMP字符串模式匹配算法
+
+模式匹配：查一个字符串（源串）里有没有另一个字符串（pattern串）
+
+要关注pattern自身的自重复行为
+
+**a b c** d **a b c** e
+0 0 0 0 0 **1 2 3**
+
+a b a b a b c
+0 0 0 1 2 3 4
+
+```js
+function kmp(source, pattern) {
+	//计算table
+	let table = new Array(pattern.length).fill(0)
+	{	
+		// 从i开始算自重复的数字
+		let i = 1, j = 0
+
+		while (i < pattern.length) {
+			if (pattern[i] === pattern[j]) {
+				++j, ++i
+				table[i] = j
+			} else {
+				if (j > 0) {
+					j = table[j]
+				} else {
+					++i
+				}
+			}
+		}	
+	}
+
+	{
+		let i = 0, j = 0
+		while (i < source.length) {
+			if (pattern[j] === source[i]) {
+				++i, ++j
+			} else {
+				if (j > 0) {
+					j = table[j]
+				} else {
+					++i
+				}
+			}
+			if (j === pattern.length) {
+				return true
+			}
+		}
+		return false
+	}
+
+	//abcdabce
+	//aabaaac
+
+	//匹配
+}
+
+kmp("", )
+
+// a a b a a a c
+// 0 0 1 0 1 2 2
+
+```
+
+Leetcode问题28
