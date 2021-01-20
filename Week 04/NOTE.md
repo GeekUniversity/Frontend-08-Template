@@ -131,3 +131,87 @@ kmp("", )
 ```
 
 Leetcode问题28
+
+
+## Wildcard
+
+加入了通配符，让字符串的匹配变得没有那么的可控
+
+* wildcard： `ab*c?d*abc*a?d`
+	* 只有*：`ab*cd*abc*a?d`
+	* 只有?：`c?d，a?d`
+
+```js
+function find(source, pattern) {
+	// 统计*数量
+	let starCount = 0
+	for (let i = 0; i < pattern.length; i++) {
+		if (pattern[i] === "*") {
+			starCount++
+		}
+	}
+	// *数量为0,直接匹配
+	if (starCount === 0) {
+		for (let i = 0; i < pattern.length; i++) {
+			if (pattern[i] !== source[i] && pattern[i] !== "?") {
+				return false
+			}
+		}
+		return true
+	}
+
+	// 有*，先把第一个*之前的匹配完
+	let i = 0
+	let lastIndex = 0
+
+	for (i = 0; pattern[i] !== "*"; i++) {
+		if (pattern[i] !== source[i] && pattern[i] !== "?") {
+			return false
+		}
+	}
+
+	// *之间，转换成正则表达式，进行一一的匹配，[\\s\\S]代表一切字符
+	lastIndex = i
+
+	for (let p = 0; p < starCount - 1; p++) {
+		i++
+		let subPattern = ""
+		while (pattern[i] !== "*") {
+			subPattern += pattern[i]
+			i++
+		}
+
+		let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g")
+		reg.lastIndex = lastIndex
+
+		if (!(reg.exec(source))) {
+			return false
+		}
+
+		lastIndex = reg.lastIndex
+	}
+
+	// 从尾部到lastIndex的字符进行遍历，遇到*则停止
+	for (let j = 0; j <= source.length - lastIndex && pattern[pattern.length - j] !== "*"; j++) {
+		if (pattern[pattern.length - j] !== source[source.length - j] && pattern[pattern.length - j] !== "?") {
+			return false
+		}
+	}
+	return true
+}
+```
+
+```js
+function find(source, pattern) {
+	// 统计*数量
+	
+	// *数量为0,直接匹配
+
+	// 有*，先把第一个*之前的匹配完
+
+	// *之间，转换成正则表达式，进行一一的匹配，[\\s\\S]代表一切字符
+
+	// 从尾部到lastIndex的字符进行遍历，遇到*则停止
+
+}
+```
