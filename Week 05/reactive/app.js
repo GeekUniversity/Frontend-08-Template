@@ -1,18 +1,31 @@
+/**
+ * @var usedReactivities 使用过的reactivities
+ * @type {Proxy[]}
+ */
 let usedReactivities = []
+/**
+ * @var reactivities 缓存
+ * @type {Map}
+ */
+let reactivities = new Map()
+/**
+ * @var callbacks 各属性对应的回调函数
+ * @type {Map}
+ */
 let callbacks = new Map()
 
 let proxied = {
-    a: 1,
+    a: {b: 1},
     b: 2
 }
 
 let po = reactive(proxied)
 
 effect(() => {
-    console.log(po.a)
+    console.log(po.a.b)
 })
 
-po.a = 3
+po.a.b = 3
 
 /**
  * 指定函数中涉及到的Object属性加上这个回调函数
@@ -45,7 +58,10 @@ function effect(callback) {
  * @returns {Proxy} 简易Reactive
  */
 function reactive(object) {
-    return new Proxy(object, {
+    if (reactivities.get(object)) {
+        return reactivities.get(object)
+    }
+    let proxy = new Proxy(object, {
         /**
          * 设置属性回调
          * @param {Object} obj 代理的对象
@@ -72,7 +88,14 @@ function reactive(object) {
         get(obj, prop) {
             // 记录这个属性
             usedReactivities.push([obj, prop])
+
+            // 如果是Object，则转为Reactive对象
+            if (typeof obj[prop] === "object") {
+                return reactive(obj[prop])
+            }
             return obj[prop]
         }
     })
+    reactivities.set(object, proxy)
+    return proxy
 }

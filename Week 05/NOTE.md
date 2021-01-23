@@ -89,3 +89,78 @@ function reactive(object) {
     })
 }
 ```
+
+### 优化reactive
+
+```js
+let object = {
+    a: 1,
+    b: 2
+}
+
+let callbacks = new Map()
+
+// 缓存
+let reactivities = new Map()
+
+let usedReactivities = []
+
+let po = reactive(object)
+
+effect(() => {
+    console.log(po.a.b)
+})
+
+function effect(callback) {
+    //callbacks.push(callback)
+    // 清除usedReactivities
+    usedReactivities = []
+    // 执行callback
+    callback()
+    console.log(usedReactivities)
+
+    for (let reactivity of usedReactivities) {
+        if (!callbacks.has(reactivity[0])) {
+            callbacks.set(reactivity[0], new Map())
+        } 
+        if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+            callbacks.get(reactivity[0]).set(reactivity[1], [])
+        }
+        // 将callback加入到所有的reactivity
+        callbacks.get(reactivity[0]).get(reactivity[1]).push(callback)
+    }
+}
+
+function reactive(object) {
+    if (reactivities.has(object)) {
+        return reactivities.get(object)
+    }
+    let proxy = new Proxy(object, {
+        set(obj, prop, val) {
+            obj[prop] = val
+            if (callbacks.get(obj))
+                if (callbacks.get(obj).get(prop))
+                    for (let callback of callbacks.get(obj).get(prop)) {
+                        callback()
+                    }
+            return obj[prop]
+        },
+        get(obj, prop) {
+            // 把得到的属性记录到usedReactivities
+            usedReactivities.push([obj, prop])
+
+            if(typeof obj[prop] === "object") {
+                return reactive(obj[prop])
+            }
+
+            return obj[prop]
+        }
+    })
+
+    reactivities.set(object, proxy)
+
+    return proxy
+}
+```
+
+完整的reactive的库怎么写，可以参考Vue的源代码（代码量是这个的几倍不止），所以讲原理和实际代码还是有区别的
