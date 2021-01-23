@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>reactive</title>
+    <title>reactive调色盘</title>
+    <style>
+        #color {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
 </head>
 <body>
+    <input id="r" type="range" min=0 max=255 />
+    <input id="g" type="range" min=0 max=255 />
+    <input id="b" type="range" min=0 max=255 />
+    <div id="color" />
     <script src="app.js"></script>
 </body>
 </html>

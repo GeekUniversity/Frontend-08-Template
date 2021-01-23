@@ -94,7 +94,7 @@ function reactive(object) {
 
 ```js
 let object = {
-    a: 1,
+    a: {b: 1},
     b: 2
 }
 
@@ -164,3 +164,110 @@ function reactive(object) {
 ```
 
 完整的reactive的库怎么写，可以参考Vue的源代码（代码量是这个的几倍不止），所以讲原理和实际代码还是有区别的
+
+## reactivity响应式对象——调色盘案例
+
+reactivity负责从数据到DOM元素一条线的监听
+
+```html
+<input id="r" type="range" min=0 max=255 />
+<input id="g" type="range" min=0 max=255 />
+<input id="b" type="range" min=0 max=255 />
+<div id="color" style="width: 100px; height:100px">
+</div>
+<script>
+let object = {
+    r: 1,
+    g: 1,
+    b: 1
+}
+
+let callbacks = new Map()
+
+// 缓存
+let reactivities = new Map()
+
+let usedReactivities = []
+
+let po = reactive(object)
+
+// 会让这个input跟着po.r的值一起变
+// 是从数据到DOM的绑定
+effect(() => {
+    document.getElementById("r").value = po.r
+})
+effect(() => {
+    document.getElementById("g").value = po.g
+})
+effect(() => {
+    document.getElementById("b").value = po.b
+})
+
+// DOM到数据的绑定
+document.getElementById("r").addEventListener("input", (e) => {
+    po.r = e.target.value
+})
+document.getElementById("g").addEventListener("input", (e) => {
+    po.g = e.target.value
+})
+document.getElementById("b").addEventListener("input", (e) => {
+    po.b = e.target.value
+})
+
+effect(() => {
+    document.getElementById("color").style.backgroundColor = `rgb(${po.r},${po.g},${po.b})`
+})
+
+
+function effect(callback) {
+    //callbacks.push(callback)
+    // 清除usedReactivities
+    usedReactivities = []
+    // 执行callback
+    callback()
+    console.log(usedReactivities)
+
+    for (let reactivity of usedReactivities) {
+        if (!callbacks.has(reactivity[0])) {
+            callbacks.set(reactivity[0], new Map())
+        } 
+        if (!callbacks.get(reactivity[0]).has(reactivity[1])) {
+            callbacks.get(reactivity[0]).set(reactivity[1], [])
+        }
+        // 将callback加入到所有的reactivity
+        callbacks.get(reactivity[0]).get(reactivity[1]).push(callback)
+    }
+}
+
+function reactive(object) {
+    if (reactivities.has(object)) {
+        return reactivities.get(object)
+    }
+    let proxy = new Proxy(object, {
+        set(obj, prop, val) {
+            obj[prop] = val
+            if (callbacks.get(obj))
+                if (callbacks.get(obj).get(prop))
+                    for (let callback of callbacks.get(obj).get(prop)) {
+                        callback()
+                    }
+            return obj[prop]
+        },
+        get(obj, prop) {
+            // 把得到的属性记录到usedReactivities
+            usedReactivities.push([obj, prop])
+
+            if(typeof obj[prop] === "object") {
+                return reactive(obj[prop])
+            }
+
+            return obj[prop]
+        }
+    })
+
+    reactivities.set(object, proxy)
+
+    return proxy
+}
+</script>
+```

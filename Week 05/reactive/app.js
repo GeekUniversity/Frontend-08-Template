@@ -15,17 +15,41 @@ let reactivities = new Map()
 let callbacks = new Map()
 
 let proxied = {
-    a: {b: 1},
-    b: 2
+    r: 0,
+    g: 0,
+    b: 0
 }
 
 let po = reactive(proxied)
 
-effect(() => {
-    console.log(po.a.b)
-})
+/**
+ * 利用reactive和addEventListener做的双向绑定
+ * @param {String} id 目标div的ID值
+ * @param {Proxy} obj 目标Proxy对象
+ */
+function bidirectionalBind(id, obj) {
+    effect(() => {
+        document.getElementById(id).value = obj[id]
+    })
+    document.getElementById(id).addEventListener("input", e => {
+        obj[id] = e.target.value
+    })
+}
 
-po.a.b = 3
+/**
+ * 利用双向绑定做的调色盘
+ * @param {Proxy} obj 目标Proxy对象
+ */
+function app(obj) {
+    bidirectionalBind("r", obj)
+    bidirectionalBind("g", obj)
+    bidirectionalBind("b", obj)
+    effect(() => {
+        document.getElementById("color").style.backgroundColor = `rgb(${obj.r},${obj.g},${obj.b})`
+    })
+}
+
+app(po)
 
 /**
  * 指定函数中涉及到的Object属性加上这个回调函数
