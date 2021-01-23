@@ -271,3 +271,36 @@ function reactive(object) {
 }
 </script>
 ```
+
+## 基本拖拽
+
+使用Range和CSSOM做的一个综合练习
+
+一般的拖拽是使用鼠标就能把目标拖到一个固定的位置
+
+我们今天的拖拽要参与到排版当中
+
+```html
+<div id="dragable" style="width:100px;height:100px;bacckground-color:pink;"></div>
+<script>
+    let dragable = document.getElementById("dragable")
+    let baseX = 0, baseY = 0
+    // 只有按下去之后才有效，所以得从mousedown监听，这样性能和逻辑都正确
+    // mousemove和mouseup得在document监听，如果在draggable监听，那么鼠标超过它区域就会拖断，即使移出浏览器，依然是能监听到的
+    dragable.addEventListener("mousedown", function(event) {
+        let startX = event.clientX, startY = event.clientY
+        // 这样removeEventLIstener才会有效
+        let up = () => {
+            baseX = baseX + event.clientX - startX
+            baseY = baseY + event.clientY - startY
+            document.removeEventListener("mousemove", move)
+            document.removeEventListener("mouseup", up)
+        }
+        let move = event => {
+            dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`
+        }
+        document.addEventListener("mousemove", move)
+        document.addEventListener("mouseup", up)
+    })
+</script>
+```
