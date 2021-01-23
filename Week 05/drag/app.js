@@ -16,8 +16,10 @@ dragable.addEventListener("mousedown", event => {
         document.removeEventListener("mousemove", move)
     }
     let move = e => {
+        // 移动了多少
+        let moveX = e.clientX, moveY = e.clientY
         // 位置
-        dragable.style.transform = `translate(${lastX + e.clientX - relX}px, ${lastY + e.clientY - relY}px)`
+        dragable.style.transform = `translate(${lastX + moveX - relX}px, ${lastY + moveY - relY}px)`
     }
     // 添加事件
     document.addEventListener("mouseup", up)
