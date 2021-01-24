@@ -304,3 +304,118 @@ function reactive(object) {
     })
 </script>
 ```
+
+## 正常流里的拖拽拖拽
+
+使用Range和CSSOM做的一个综合练习
+
+一般的拖拽是使用鼠标就能把目标拖到一个固定的位置
+
+我们今天的拖拽要参与到排版当中
+
+```html
+<div id="container">文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字
+</div>
+<div id="dragable" style="width:100px;height:100px;bacckground-color:pink;"></div>
+<script>
+    let dragable = document.getElementById("dragable")
+    let baseX = 0, baseY = 0
+    // 只有按下去之后才有效，所以得从mousedown监听，这样性能和逻辑都正确
+    // mousemove和mouseup得在document监听，如果在draggable监听，那么鼠标超过它区域就会拖断，即使移出浏览器，依然是能监听到的
+    dragable.addEventListener("mousedown", function(event) {
+        let startX = event.clientX, startY = event.clientY
+        // 这样removeEventLIstener才会有效
+        let up = () => {
+            baseX = baseX + event.clientX - startX
+            baseY = baseY + event.clientY - startY
+            document.removeEventListener("mousemove", move)
+            document.removeEventListener("mouseup", up)
+        }
+        let move = event => {
+            let range = getNearest(event.clientX, event.clientY)
+            range.insertNode(dragable)
+            // dragable.style.transform = `translate(${baseX + event.clientX - startX}px, ${baseY + event.clientY - startY}px)`
+        }
+        document.addEventListener("mousemove", move)
+        document.addEventListener("mouseup", up)
+    })
+
+    let ranges = []
+
+    let container = document.getElementById("container")
+    for(let i = 0; i < container.childNodes[0].textContent.length; i++) {
+        let range = document.createRange()
+        range.setStart(container.childNodes[0], i)
+        range.setEnd(container.childNodes[0], i)
+
+        // CSSOM，会随着页面相关变化而变化，所以不能直接存进来
+        console.log(range.getBoundingClientRect())
+        ranges.push(range)
+    }
+
+    function getNearest(x, y) {
+        let min = Infinity
+        let nearest = null
+
+        for(let range of ranges) {
+            let rect = range.getBoundingClientRect()
+            let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2
+
+            if(distance < min) {
+                min = distance
+                nearest = range
+            }
+        }
+
+        return nearest
+    }
+
+    document.addEventListener("selectStart", (e) => {
+        e.preventDefault()
+    })
+</script>
+```
