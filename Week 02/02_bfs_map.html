@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>path</title>
+    <style>
+        .cell {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background: #e2e2e2;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+        }
+        .black {
+            background: black;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #container {
+            width: 601px;
+            font-size: 0;
+            text-align: center;
+            margin: 0 auto;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<button id="save">Save</button>
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<script>
+    let map = localStorage["map"]
+        ? JSON.parse(localStorage["map"]): Array(10000).fill(0);
+
+
+    let container = document.getElementById("container");
+    for (let y = 0; y < 100; y++) {
+        for (let x = 0; x < 100; x++) {
+            let cell = document.createElement("div");
+            cell.classList.add("cell");
+
+            if (map[y * 100 + x] === 1) {
+                cell.classList.add("black");
+            }
+            cell.addEventListener("mousemove", () => {
+                if (mousedown) {
+                    if (clear) {
+                        cell.classList.remove("black");
+                        map[y * 100 + x] = 0;
+                    } else {
+                        cell.classList.add("black");
+                        map[y * 100 + x] = 1;
+                    }
+                }
+            });
+            container.appendChild(cell);
+        }
+    }
+    function path(map, start, end) {
+        // 广度优先
+        let queue = [start]; //队列先进先出 push/shift
+        function insert(x, y) {
+            if (x < 0 || x > 100 || y < 0 || y > 100) {
+                // 边界
+                return;
+            }
+
+            if (map[100 * y + x]) {
+                // 障碍物或已搜索包含 1和2两种情况
+                return;
+            }
+            map[100 * y + x] = 2; //已搜索标记
+            queue.push([x, y]);
+        }
+        while (queue.length) {
+            let [x, y] = queue.shift();
+            console.log(x, y);
+            if (x === end[0] && y === end[1]) {
+                return true;
+            }
+            insert(x - 1, y);
+            insert(x + 1, y);
+            insert(x, y - 1);
+            insert(x, y + 1);
+        }
+    }
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener("mousedown", (e) => {
+        mousedown = true;
+        clear = e.which === 3;
+    });
+
+    document.addEventListener("mouseup", () => (mousedown = false));
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+</script>
+</body>
+</html>

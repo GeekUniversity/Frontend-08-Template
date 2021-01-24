@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>basic proxy</title>
+</head>
+<body>
+<script>
+    let object = {
+        a: 1,
+        b: 2
+    }
+
+    let po = new Proxy(object, {
+        set(obj, prop, val) {
+            console.log(obj, prop, val)
+        }
+    })
+
+</script>
+</body>
+</html>
